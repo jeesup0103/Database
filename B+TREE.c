@@ -103,12 +103,34 @@ void _insert(Node* present, int k) {
     if (present->leaf) {
         //-------------------------------------------------------------------------------------------------------
         // Write your code.
+        // Find the correct location to insert new key
+        while (i >= 1 && present->keys[i - 1] > k) {
+            present->keys[i] = present->keys[i - 1];
+            i--;
+        }
+
+        // Insert the new key at found location
+        present->keys[i] = k;
+        present->n++;
+
+        // Check if we need to split the node
+        if (present->n == t) {
+            _balancing(present);
+        }
 
         //-------------------------------------------------------------------------------------------------------
     } else  // If this node is not leaf
     {
         //-------------------------------------------------------------------------------------------------------
         // Write your code.
+        // Find the child which is going to have the new key
+        while (i >= 1 && present->keys[i - 1] > k) {
+            i--;
+        }
+
+        // Insert the new key in the found child
+        _insert(present->child[i], k);
+
         //-------------------------------------------------------------------------------------------------------
     }
 }
@@ -138,6 +160,64 @@ Node* _splitChild(Node* present) {
 
     //-------------------------------------------------------------------------------------------------------
     // Write your code.
+    splitIdx = t/2;
+    risingKey = present->keys[splitIdx];
+    currentParent = present->parent;
+
+    left = present;
+    left->n = splitIdx;
+
+    // Split the keys between the present node and the new right node
+    if(present->leaf){
+        for(i = splitIdx; i < t; i++){
+            right->keys[i - splitIdx] = present->keys[i];
+            present->keys[i] = 0;
+        }
+        right->n = t - splitIdx;
+        right->leaf = true;
+
+        // Link present and right node
+        right->next = present->next;
+        present->next = right;
+        for (i = splitIdx + 1; i < present->n + 1; i++) {
+            right->child[i - splitIdx - 1] = present->child[i];
+        }
+    }
+    // If present node is not a leaf, split the keys and children
+    else if (!present->leaf) {
+        // Split keys
+        for(i = splitIdx + 1; i < t; i++){
+            right->keys[i - splitIdx - 1] = present->keys[i];
+        }
+        // Split children
+        for(i = splitIdx + 1; i <= t; i++){
+            right->child[i - splitIdx - 1] = present->child[i];
+            if (present->child[i] != NULL) {
+                present->child[i]->parent = right;
+                present->child[i] = NULL;
+            }
+        }
+
+        right->n = t - splitIdx - 1;
+        right->leaf = false;
+    }
+
+    // Raise the key
+    if(present->parent != NULL){
+        parentIdx = currentParent->n;
+
+        while(parentIdx >= 1 && currentParent->keys[parentIdx - 1] > risingKey) {
+            currentParent->keys[parentIdx] = currentParent->keys[parentIdx - 1];
+            currentParent->child[parentIdx + 1] = currentParent->child[parentIdx];
+            parentIdx--;
+        }
+        
+        // Insert the rising key and the new child into the parent node
+        currentParent->keys[parentIdx] = risingKey;
+        currentParent->n++;
+        currentParent->child[parentIdx + 1] = right;
+        right->parent = currentParent;
+    }
 
     
     //-------------------------------------------------------------------------------------------------------
