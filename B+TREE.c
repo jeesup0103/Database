@@ -167,7 +167,7 @@ Node* _splitChild(Node* present) {
     left = present;
     left->n = splitIdx;
 
-    // Split the keys between the present node and the new right node
+    // If present node is leaf, split keys between present node and new right node
     if(present->leaf){
         for(i = splitIdx; i < t; i++){
             right->keys[i - splitIdx] = present->keys[i];
@@ -179,11 +179,8 @@ Node* _splitChild(Node* present) {
         // Link present and right node
         right->next = present->next;
         present->next = right;
-        for (i = splitIdx + 1; i < present->n + 1; i++) {
-            right->child[i - splitIdx - 1] = present->child[i];
-        }
     }
-    // If present node is not a leaf, split the keys and children
+    // If present node is not a leaf, split keys and children
     else if (!present->leaf) {
         // Split keys
         for(i = splitIdx + 1; i < t; i++){
@@ -242,6 +239,7 @@ void removeElement(int k) {
         printf("The tree is empty\n");
         return;
     }
+    printTree(); // REMOVE
 
     // Call the remove function for root
     _remove(root, k);
@@ -269,9 +267,81 @@ void _remove(Node* present, int k) {
         printf("error");
         return;
     } else {
+        printf("REMOVE K: %d\n", k);
         //-------------------------------------------------------------------------------------------------------
         // Write your code.
+        int i = 0;
+        // Find index in current node
+        while(i < present->n && present->keys[i] < k) i++;
 
+        // If found
+        if(i < present->n && present->keys[i] == k){
+            if(present->leaf){
+                printf("Found and leaf\n");
+                for(; i < present->n - 1; i++){
+                    present->keys[i] = present->keys[i + 1];
+                }
+                present->n--;
+                _balancingAfterDel(present);
+            }
+            else{
+                printf("Found and not leaf\n");
+                // Go to right and left most node
+                Node* sib = present->child[i + 1];
+                int successor;
+                while (!sib->leaf) {
+                    sib = sib->child[0];
+                }
+                // Get the smallest value that is bigger than k
+                if(sib->n > 1){
+                    successor = sib->keys[1];
+
+                    // Change node key value to bigger number
+                    present->keys[i] = successor;
+
+                    // remove k in leaf node
+                    for(int j = 0; j < sib->n - 1; j++){
+                        sib->keys[j] = sib->keys[j + 1];
+                    }
+                    sib->n--;
+
+                    _balancingAfterDel(sib);
+                }
+                
+                else if (sib->parent != present){
+                    printf("CASE 1\n");
+                    successor = sib->parent->child[1]->keys[0];
+                    // Change node key value to bigger number
+                    present->keys[i] = successor;
+                    
+                    // remove k in leaf node
+                    for(int j = 0; j < sib->n - 1; j++){
+                        sib->keys[j] = sib->keys[j + 1];
+                    }
+                    sib->n--;
+
+                    _balancingAfterDel(sib);
+                }
+                
+                // Most right value is going to be removed
+                else{
+                    printf("CASE 2\n");
+                    // remove k in leaf node
+                    for(int j = 0; j < sib->n - 1; j++){
+                        sib->keys[j] = sib->keys[j + 1];
+                    }
+                    sib->n--;
+                    // remove k in present node
+                    present->n--;
+                    _balancingAfterDel(present);
+                }
+                
+            }
+        } 
+        else if(!present->leaf){
+            printf("NOT Found go to child i:%d\n", i);
+            _remove(present->child[i], k);
+        }
         //-------------------------------------------------------------------------------------------------------
     }
 }
