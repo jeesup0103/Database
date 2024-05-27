@@ -239,7 +239,6 @@ void removeElement(int k) {
         printf("The tree is empty\n");
         return;
     }
-    printTree(); // REMOVE
 
     // Call the remove function for root
     _remove(root, k);
@@ -267,7 +266,6 @@ void _remove(Node* present, int k) {
         printf("error");
         return;
     } else {
-        printf("REMOVE K: %d\n", k);
         //-------------------------------------------------------------------------------------------------------
         // Write your code.
         int i = 0;
@@ -277,7 +275,6 @@ void _remove(Node* present, int k) {
         // If found
         if(i < present->n && present->keys[i] == k){
             if(present->leaf){
-                printf("Found and leaf\n");
                 for(; i < present->n - 1; i++){
                     present->keys[i] = present->keys[i + 1];
                 }
@@ -285,7 +282,6 @@ void _remove(Node* present, int k) {
                 _balancingAfterDel(present);
             }
             else{
-                printf("Found and not leaf\n");
                 // Go to right and left most node
                 Node* sib = present->child[i + 1];
                 int successor;
@@ -309,7 +305,6 @@ void _remove(Node* present, int k) {
                 }
                 
                 else if (sib->parent != present){
-                    printf("CASE 1\n");
                     successor = sib->parent->child[1]->keys[0];
                     // Change node key value to bigger number
                     present->keys[i] = successor;
@@ -325,7 +320,6 @@ void _remove(Node* present, int k) {
                 
                 // Most right value is going to be removed
                 else{
-                    printf("CASE 2\n");
                     // remove k in leaf node
                     for(int j = 0; j < sib->n - 1; j++){
                         sib->keys[j] = sib->keys[j + 1];
@@ -339,7 +333,6 @@ void _remove(Node* present, int k) {
             }
         } 
         else if(!present->leaf){
-            printf("NOT Found go to child i:%d\n", i);
             _remove(present->child[i], k);
         }
         //-------------------------------------------------------------------------------------------------------
